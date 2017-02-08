@@ -2,10 +2,16 @@ from flask import render_template
 from app import app
 
 
-@app.route('/')
 @app.route('/index')
 def index():
-    user = {'nickname': 'UCA student'}
+    return render_template("index.html")
 
-    return render_template("index.html",
-                           )
+
+@app.route('/about')
+def about():
+    return render_template("about.html")
+
+
+@app.route('/documents')
+def documents():
+    return render_template("documents.html")
