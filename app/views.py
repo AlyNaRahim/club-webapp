@@ -1,33 +1,37 @@
 from flask import render_template, flash, redirect, session, url_for, request, g
 # from flask_login import login_user, logout_user, current_user, login_required
 from app import app #, db, lm
-# from .forms import LoginForm
-# from .models import User
+from functools import wraps
 
+def login_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            flash('You need to login first.')
+            return redirect(url_for('login'))
+    return wrap
 
-# @lm.user_loader
-# def load_user(id):
-#     return User.query.get(int(id))
-
-
-# @app.before_request
-# def before_request():
-#     g.user = current_user
-
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    flash('You were logged out.')
+    return redirect(url_for('index'))
 
 @app.route('/')
 @app.route('/index')
-# @login_required
+@login_required
 def index():
     return render_template('index.html')
 
-
 @app.route('/about')
+@login_required
 def about():
     return render_template("about.html")
 
-
 @app.route('/documents')
+@login_required
 def documents():
     return render_template("documents.html")
 
@@ -35,24 +39,10 @@ def documents():
 def login():
     error = None
     if request.method == 'POST':
-        if request.form['username'] != 'admin' or request.form['password'] != 'admin':
+        if request.form['username'] != 'uca' or request.form['password'] != 'uca':
             error = 'Wrong username or password. Please try again.'
         else:
+            session['logged_in'] = True
+            flash('You were logged in.')
             return redirect(url_for('index'))
     return render_template('login.html', error=error)
-# def login():
-#     if g.user is not None and g.user.is_authenticated:
-#         return redirect(url_for('/index'))
-#     form = LoginForm()
-#     if form.validate_on_submit():
-#         session['remember_me'] = form.remember_me.data
-#         return oid.try_login(form.openid.data, ask_for=['nickname', 'email'])
-#     return render_template('login.html')
-
-
-
-# @app.route('/logout')
-# @login_required
-# def logout():
-#     logout_user()
-#     return redirect(url_for('index'))
